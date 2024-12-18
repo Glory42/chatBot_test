@@ -1,5 +1,4 @@
-CHATBOT TEST
-
+## CHATBOT TEST
 
 This project is a simple AI-powered chatbot that can interact with users via text and voice. It includes speech recognition for listening to user inputs and text-to-speech to respond aloud. This bot is designed to act as a friendly companion, capable of remembering user details and moods, making conversations more personal and interactive.
 
