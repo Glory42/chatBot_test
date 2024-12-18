@@ -1,0 +1,4 @@
+flask
+SpeechRecognition
+pyttsx3
+gunicorn

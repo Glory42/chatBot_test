@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Companion</title>
+    <style>
+        /* Basic CSS for styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        #chatbox {
+            width: 50%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        #chatlog {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #fafafa;
+            text-align: left;
+        }
+        #userInput {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="chatbox">
+        <h2>Talk to Your AI Companion!</h2>
+        <div id="chatlog"></div>
+        <textarea id="userInput" placeholder="Type your message..."></textarea>
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="startListening()">Speak</button> <!-- Speak button -->
+    </div>
+
+    <script>
+        // This function is triggered when the "Send" button is clicked
+        function sendMessage() {
+            const message = document.getElementById("userInput").value;
+            document.getElementById("userInput").value = "";  // Clear the input box
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const chatlog = document.getElementById("chatlog");
+                chatlog.innerHTML += "<p><strong>You:</strong> " + message + "</p>";
+                chatlog.innerHTML += "<p><strong>AI:</strong> " + data.reply + "</p>";
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        }
+
+        // This function is triggered when the "Speak" button is clicked
+        function startListening() {
+            const chatlog = document.getElementById("chatlog");
+
+            // Check if the browser supports speech recognition
+            if (!('webkitSpeechRecognition' in window)) {
+                chatlog.innerHTML += "<p><strong>AI:</strong> Sorry, your browser doesn't support voice recognition.</p>";
+                return;
+            }
+
+            // Create a new SpeechRecognition instance
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = "en-US";  // You can change this to any language you prefer
+            recognition.interimResults = false;  // Do not return interim results, only final speech result
+
+            // When speech is recognized and converted to text
+            recognition.onresult = function(event) {
+                const speechToText = event.results[0][0].transcript;  // Get the spoken text
+
+                // Display the recognized speech in chatlog
+                chatlog.innerHTML += "<p><strong>You:</strong> " + speechToText + "</p>";
+
+                // Send the speech as a message to the server
+                fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: speechToText })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    chatlog.innerHTML += "<p><strong>AI:</strong> " + data.reply + "</p>";
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+            };
+
+            // Start speech recognition
+            recognition.start();
+        }
+    </script>
+</body>
+</html>
